@@ -1,0 +1,2 @@
+ee4308_bringup:ee4308_turtle
+-DCATKIN_DEVEL_PREFIX=/home/yangkai/ros_code/EE4308/proj1/devel -DCMAKE_INSTALL_PREFIX=/home/yangkai/ros_code/EE4308/proj1/install -G Unix Makefiles
