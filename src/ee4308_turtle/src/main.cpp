@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 #include "grid.hpp"
 #include "planner.hpp"
+#include "bfs.hpp"
 #include "trajectory.hpp"
 #include <stdio.h>
 #include <stdlib.h>
@@ -152,6 +153,7 @@ int main(int argc, char **argv)
 
     // Setup the planner class
     Planner planner(grid);
+    BFS bfs(grid);
 
     // setup loop rates
     ros::Rate rate(main_iter_rate);
@@ -249,7 +251,7 @@ int main(int argc, char **argv)
                     if (verbose)
                         ROS_INFO(" TMAIN : Begin trajectory generation over all turning points");
                     // generate trajectory over all turning points
-                    // doing the following manner results in the front of trajectory being the goal, and the back being close to the rbt position
+                    // doing the following mannerisited(false) results in the front of trajectory being the goal, and the back being close to the rbt position
                     trajectory.clear();
                     for (int m = 1; m < post_process_path.size(); ++m)
                     {
@@ -304,9 +306,16 @@ int main(int argc, char **argv)
             else
             { // robot lies on inaccessible cell, or if goal lies on inaccessible cell
                 if (!grid.get_cell(pos_rbt))
-                    ROS_WARN(" TMAIN : Robot lies on inaccessible area. No path can be found");
+                    ROS_ERROR(" TMAIN : Robot lies on inaccessible area. No path can be found");
                 if (!grid.get_cell(pos_goal))
-                    ROS_WARN(" TMAIN : Goal lies on inaccessible area. No path can be found");
+                    ROS_ERROR(" TMAIN : Goal lies on inaccessible area. No path can be found");
+                    ROS_WARN("[BFS] Running BFS to find nearest free cell");
+                    ROS_WARN("[BFS] Current Goal Position: %f, %f", pos_goal.x, pos_goal.y);
+                    Index idx = grid.pos2idx(pos_goal);
+                    idx = bfs.get(idx);
+                    ROS_WARN("[BFS] Updated Goal Position: %d, %d", idx.i, idx.j);
+                    goals[g] = grid.idx2pos(idx);
+                    ROS_WARN("[BFS] Replanned to %f, %f", pos_goal.x, pos_goal.y);
             }
         }
 
