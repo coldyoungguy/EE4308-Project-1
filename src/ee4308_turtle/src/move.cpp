@@ -83,6 +83,10 @@ int main(int argc, char **argv)
         ROS_WARN(" TMOVE : Param turn_throttle_scale not found, set to 1");
     if (!nh.param("data_record", record, false))
         ROS_WARN(" TMAIN : Param data_record not found, set to false");
+    std::string coupling_type;
+    if (!nh.getParam("coupling_type", coupling_type))
+        ROS_WARN(" TMAIN : Param coupling_type not found, set to exp");
+        coupling_type = "exp";
     std::string PATH_record;
     if (!nh.getParam("PATH_record", PATH_record)) {
         ROS_WARN(" TMAIN : Param PATH_record not found, set data_record to false");
@@ -150,8 +154,12 @@ int main(int argc, char **argv)
             ////////////////// MOTION CONTROLLER HERE //////////////////
 
             error_ang = limit_angle(heading(pos_rbt, target) - ang_rbt);
-            if ((!sign(error_ang) && abs(error_ang) < M_PI_2) || (sign(error_ang) && abs(error_ang) > M_PI_2)) {
+            if ((!sign(error_ang) && abs(error_ang) < M_PI_2)) {
                 error_pos = -1 * dist_euc(pos_rbt, target);
+                error_ang += M_PI_2;
+            } else if (sign(error_ang) && abs(error_ang) > M_PI_2) {
+                error_pos = -1 * dist_euc(pos_rbt, target);
+                error_ang -= M_PI_2;
             } else {error_pos = dist_euc(pos_rbt, target);}
             
 
@@ -168,8 +176,17 @@ int main(int argc, char **argv)
             cmd_lin_vel = sat(cmd_lin_vel_prev + cmd_lin_acc * dt, max_lin_vel);
             cmd_ang_vel = sat(cmd_ang_vel_prev + cmd_ang_acc * dt, max_ang_vel);
 
-            // cos curve for lin vel smoothing
-            // cmd_lin_vel = cmd_lin_vel * exp(M_PI- turn_throttle_scale * error_ang) / (1 + exp(M_PI- turn_throttle_scale * error_ang)) * 1.03;
+            // curve for lin vel smoothing
+            if (coupling_type == "exp") {
+                // higher number for turn_throttle_scale make graph steeper
+                ROS_INFO("[Curve smoothing] Using exponential curve for lin vel smoothing");
+                cmd_lin_vel = cmd_lin_vel * exp(M_PI- turn_throttle_scale * error_ang) / (1 + exp(M_PI- turn_throttle_scale * error_ang)) * 1.03;
+            } else if (coupling_type == "cos") {
+                // higher even number for turn_throttle_scale make graph steeper
+                ROS_INFO("[Curve smoothing] Using cosine curve for lin vel smoothing");
+                cmd_lin_vel = cmd_lin_vel * pow(cos(error_ang), turn_throttle_scale);
+            }
+
             // save current timestep for future calculations
             error_pos_prev = error_pos;
             error_ang_prev = error_ang;
