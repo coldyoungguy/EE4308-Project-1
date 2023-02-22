@@ -1,4 +1,6 @@
 # main
+verbose_main: true
+verbose_bfs: false
 close_enough: 0.05
 target_dt: 0.04 # this (s) should be slower than or equals to main_iter_rate (Hz)
 average_speed: 0.2
@@ -23,7 +25,6 @@ enable_move: true
 verbose_move: false
 data_record: false
 PATH_record: '/home/yangkai/data.csv'
-# pid tune for ground (lin: P=4.7, D=1.32) (ang: P=2.7, D=1.75)
 Kp_lin: 1.0 #5.1 #4.7
 Ki_lin: 0.0
 Kd_lin: 0.0 #2.5 #1.32
