@@ -28,18 +28,6 @@ BFS::BFS(Grid & grid) // assumes the size of the grid is always the same
 void BFS::add_to_open(Node * node)
 {   // sort node into the open list
 
-    for (int n = 0; n < open_list.size(); ++n)
-    {
-        Open & open_node = open_list[n];
-        // the current node in open is guaranteed to be more expensive than the node to be inserted ==> insert at current location            
-        open_list.emplace(open_list.begin() + n, node->idx);
-
-        // emplace is equivalent to the below but more efficient:
-        // Open new_open_node = Open(node_f, node->idx);
-        // open_list.insert(open_list.begin() + n, new_open_node);
-        return;
-    }
-    // at this point, either open_list is empty or node_f is more expensive that all open nodes in the open list
     open_list.emplace_back(node->idx);
 }
 BFS::Node * BFS::poll_from_open()
