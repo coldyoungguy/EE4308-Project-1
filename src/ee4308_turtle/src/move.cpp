@@ -156,10 +156,10 @@ int main(int argc, char **argv)
             error_ang = limit_angle(heading(pos_rbt, target) - ang_rbt);
             if ((!sign(error_ang) && abs(error_ang) < M_PI_2)) {
                 error_pos = -1 * dist_euc(pos_rbt, target);
-                error_ang += M_PI_2;
+                error_ang += M_PI;
             } else if (sign(error_ang) && abs(error_ang) > M_PI_2) {
                 error_pos = -1 * dist_euc(pos_rbt, target);
-                error_ang -= M_PI_2;
+                error_ang -= M_PI;
             } else {error_pos = dist_euc(pos_rbt, target);}
             
 
@@ -179,11 +179,11 @@ int main(int argc, char **argv)
             // curve for lin vel smoothing
             if (coupling_type == "exp") {
                 // higher number for turn_throttle_scale make graph steeper
-                ROS_INFO("[Curve smoothing] Using exponential curve for lin vel smoothing");
+                // ROS_INFO("[Curve smoothing] Using exponential curve for lin vel smoothing");
                 cmd_lin_vel = cmd_lin_vel * exp(M_PI- turn_throttle_scale * error_ang) / (1 + exp(M_PI- turn_throttle_scale * error_ang)) * 1.03;
             } else if (coupling_type == "cos") {
                 // higher even number for turn_throttle_scale make graph steeper
-                ROS_INFO("[Curve smoothing] Using cosine curve for lin vel smoothing");
+                // ROS_INFO("[Curve smoothing] Using cosine curve for lin vel smoothing");
                 cmd_lin_vel = cmd_lin_vel * pow(cos(error_ang), turn_throttle_scale);
             }
 

@@ -309,13 +309,13 @@ int main(int argc, char **argv)
                     ROS_ERROR(" TMAIN : Robot lies on inaccessible area. No path can be found");
                 if (!grid.get_cell(pos_goal))
                     ROS_ERROR(" TMAIN : Goal lies on inaccessible area. No path can be found");
-                    ROS_WARN("[BFS] Running BFS to find nearest free cell");
-                    ROS_WARN("[BFS] Current Goal Position: %f, %f", pos_goal.x, pos_goal.y);
-                    Index idx = grid.pos2idx(pos_goal);
-                    idx = bfs.get(idx);
-                    ROS_WARN("[BFS] Updated Goal Position: %d, %d", idx.i, idx.j);
-                    goals[g] = grid.idx2pos(idx);
-                    ROS_WARN("[BFS] Replanned to %f, %f", pos_goal.x, pos_goal.y);
+                    // ROS_WARN("[BFS] Running BFS to find nearest free cell");
+                    // ROS_WARN("[BFS] Current Goal Position: %f, %f", pos_goal.x, pos_goal.y);
+                    // Index idx = grid.pos2idx(pos_goal);
+                    // idx = bfs.get(idx);
+                    // ROS_WARN("[BFS] Updated Goal Position: %d, %d", idx.i, idx.j);
+                    // goals[g] = grid.idx2pos(idx);
+                    // ROS_WARN("[BFS] Replanned to %f, %f", pos_goal.x, pos_goal.y);
             }
         }
 

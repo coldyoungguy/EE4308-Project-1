@@ -19,7 +19,7 @@ straight_thresh: 0.05
 motion_iter_rate: 50
 
 # move
-enable_move: false
+enable_move: true
 verbose_move: false
 data_record: false
 PATH_record: '/home/yangkai/data.csv'
