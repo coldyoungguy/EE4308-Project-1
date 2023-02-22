@@ -27,7 +27,6 @@ BFS::BFS(Grid & grid) // assumes the size of the grid is always the same
 
 void BFS::add_to_open(Node * node)
 {   // sort node into the open list
-
     open_list.emplace_back(node->idx);
 }
 BFS::Node * BFS::poll_from_open()
