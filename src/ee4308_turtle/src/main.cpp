@@ -308,17 +308,34 @@ int main(int argc, char **argv)
             else
             { // robot lies on inaccessible cell, or if goal lies on inaccessible cell
                 if (!grid.get_cell(pos_rbt))
-                    ROS_ERROR(" TMAIN : Robot lies on inaccessible area. No path can be found");
+                    if (verbose_bfs) {
+                        ROS_ERROR(" TMAIN : Robot lies on inaccessible area. No path can be found");
+                        ROS_WARN("[BFS Robot] Finding nearest free cell");
+                        ROS_WARN("[BFS Robot] Current Goal: %f, %f", pos_goal.x, pos_goal.y);
+                    }
+                        Index idx = grid.pos2idx(pos_rbt);
+                        idx = bfs.get(idx);
+                        Position pos_rbt_replan = grid.idx2pos(idx);
+                        goals.insert(goals.begin(), pos_rbt_replan);
+    
+                    if (verbose_bfs) {
+                        ROS_WARN("[BFS Robot] Updated Goal: %f, %f", pos_rbt_replan.x, pos_rbt_replan.y);
+                        ROS_WARN("[BFS Robot] Replanned to %f, %f", pos_goal.x, pos_goal.y);
+                    }
                 if (!grid.get_cell(pos_goal)){
                     if (verbose_bfs) {
                         ROS_ERROR(" TMAIN : Goal lies on inaccessible area. No path can be found");
-                        ROS_WARN("[BFS] Running BFS to find nearest free cell");
-                        ROS_WARN("[BFS] Current Goal Position: %f, %f", pos_goal.x, pos_goal.y);
+                        ROS_WARN("[BFS Goal] Finding nearest free cell");
+                        ROS_WARN("[BFS Goal] Current Goal: %f, %f", pos_goal.x, pos_goal.y);
+                    }
                         Index idx = grid.pos2idx(pos_goal);
                         idx = bfs.get(idx);
-                        ROS_WARN("[BFS] Updated Goal Position: %d, %d", idx.i, idx.j);
                         goals[g] = grid.idx2pos(idx);
-                        ROS_WARN("[BFS] Replanned to %f, %f", pos_goal.x, pos_goal.y);
+                        Position pos_goal_replan = grid.idx2pos(idx);
+                    
+                    if (verbose_bfs) {
+                        ROS_WARN("[BFS Goal] Updated Goal: %f, %f", pos_goal_replan.x, pos_goal_replan.y);
+                        ROS_WARN("[BFS Goal] Replanned to %f, %f", pos_goal.x, pos_goal.y);                        
                     }
                 }
             }
