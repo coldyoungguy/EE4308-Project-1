@@ -92,6 +92,10 @@ int main(int argc, char **argv)
         ROS_WARN(" TMAIN : Param PATH_record not found, set data_record to false");
         record = false;
     }
+    if (PATH_record == "PATH") {
+        ROS_WARN(" TMAIN : Param PATH_record not set, set data_record to false");
+        record = false;
+    }
 
     // For file recording
     std::ofstream data_file;

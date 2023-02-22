@@ -24,17 +24,17 @@ motion_iter_rate: 50
 enable_move: true
 verbose_move: false
 data_record: false
-PATH_record: '/home/yangkai/data.csv'
-Kp_lin: 1.0 #5.1 #4.7
+PATH_record: 'PATH' # default "PATH" to not record in random place without intialising
+Kp_lin: 1.0
 Ki_lin: 0.0
-Kd_lin: 0.0 #2.5 #1.32
-max_lin_vel: 0.22 # max is 0.22
-max_lin_acc: 0.5 #0.5
-Kp_ang: 1.0 #2.7
+Kd_lin: 0.0
+max_lin_vel: 0.22
+max_lin_acc: 0.5
+Kp_ang: 1.0
 Ki_ang: 0.0
-Kd_ang: 0.0 #1.75
-max_ang_vel: 2.84 # max is 2.84
-max_ang_acc: 4 #2
+Kd_ang: 0.0
+max_ang_vel: 2.84
+max_ang_acc: 4
 move_iter_rate: 25
 
 turn_throttle_scale: 20 # higher number makes curve steeper and screw towards 0
