@@ -19,9 +19,9 @@ straight_thresh: 0.05
 motion_iter_rate: 50
 
 # move
-enable_move: true
+enable_move: false
 verbose_move: false
-data_record: true
+data_record: false
 PATH_record: '/home/yangkai/data.csv'
 # pid tune for ground (lin: P=4.7, D=1.32) (ang: P=2.7, D=1.75)
 Kp_lin: 2.0 #5.1 #4.7
