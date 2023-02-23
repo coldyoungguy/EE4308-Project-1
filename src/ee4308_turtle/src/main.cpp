@@ -327,7 +327,8 @@ int main(int argc, char **argv)
                             idx = dijkstra.get(idx);
                         }
                         Position pos_rbt_replan = grid.idx2pos(idx);
-                        goals.insert(goals.begin(), pos_rbt_replan);
+                        // goals.insert(goals.begin(), pos_rbt_replan);
+                        goals.insert(goals.begin() + g + 1, grid.idx2pos(idx));
     
                     if (verbose_bfs) {
                         ROS_WARN("[%s Robot] Updated Goal: %f, %f", inflation_exit_algo.c_str(), pos_rbt_replan.x, pos_rbt_replan.y);
@@ -345,12 +346,13 @@ int main(int argc, char **argv)
                         } else if (inflation_exit_algo == "Dijkstra") {
                             idx = dijkstra.get(idx);
                         }
-                        goals[g] = grid.idx2pos(idx);
+                        goals.insert(goals.begin() + g + 1, grid.idx2pos(idx));
+                        // goals[g] = grid.idx2pos(idx);
                         Position pos_goal_replan = grid.idx2pos(idx);
                     
                     if (verbose_bfs) {
                         ROS_WARN("[%s Goal] Updated Goal: %f, %f", inflation_exit_algo.c_str(), pos_goal_replan.x, pos_goal_replan.y);
-                        ROS_WARN("[%s Goal] Replanned to %f, %f", inflation_exit_algo.c_str(), pos_goal.x, pos_goal.y);                        
+                        ROS_WARN("[%s Goal] Replanned to %f, %f", inflation_exit_algo.c_str(), goals[g+1].x, goals[g+1].y);                        
                     }
                 }
             }

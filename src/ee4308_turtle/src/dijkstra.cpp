@@ -50,9 +50,7 @@ Dijkstra::Node * Dijkstra::poll_from_open()
     Index & idx = open_list.front().idx; //ref is faster than copy
     int k = grid.get_key(idx);
     Node * node = &(nodes[k]);
-
     open_list.pop_front();
-
     return node;
 }
 
