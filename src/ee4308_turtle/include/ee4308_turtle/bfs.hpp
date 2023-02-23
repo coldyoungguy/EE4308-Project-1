@@ -27,7 +27,8 @@ class BFS
         Grid & grid; // REFERENCE <-- you cannot put the Planner class into containers (vectors , arrays etc.) 
         
         BFS(Grid & grid);
-        Index get(Index idx);
+        std::vector<Index> get(Index idx);
+        std::vector<Position> get(Position pos_start);
 
     private:
         std::vector<Node> nodes;

@@ -158,15 +158,25 @@ int main(int argc, char **argv)
 
             ////////////////// MOTION CONTROLLER HERE //////////////////
 
-            error_ang = limit_angle(heading(pos_rbt, target) - ang_rbt);        
+            error_ang = limit_angle(heading(pos_rbt, target) - ang_rbt);
+
+            if (abs(error_ang) > M_PI_2) {
+                if (sign(error_ang) == -1) {
+                    error_ang += M_PI;
+                } else if (sign(error_ang) == 1) {
+                    error_ang -= M_PI;
+                } 
+                error_pos = -1 * dist_euc(pos_rbt, target);
+            }
+            else {error_pos = dist_euc(pos_rbt, target);}        
             
-            if ((!sign(error_ang) && abs(error_ang) > M_PI_2)) {
-                error_pos = -1 * dist_euc(pos_rbt, target);
-                error_ang += M_PI;
-            } else if (sign(error_ang) && abs(error_ang) > M_PI_2) {
-                error_pos = -1 * dist_euc(pos_rbt, target);
-                error_ang -= M_PI;
-            } else {error_pos = dist_euc(pos_rbt, target);}
+            // if ((!sign(error_ang) && abs(error_ang) > M_PI_2)) {
+            //     error_pos = -1 * dist_euc(pos_rbt, target);
+            //     error_ang += M_PI;
+            // } else if (sign(error_ang) && abs(error_ang) > M_PI_2) {
+            //     error_pos = -1 * dist_euc(pos_rbt, target);
+            //     error_ang -= M_PI;
+            // } else {error_pos = dist_euc(pos_rbt, target);}
             
 
             I_pos += dt * error_pos;

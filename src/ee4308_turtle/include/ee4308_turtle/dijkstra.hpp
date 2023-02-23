@@ -28,7 +28,8 @@ class Dijkstra
         Grid & grid; // REFERENCE <-- you cannot put the Dijkstra class into containers (vectors , arrays etc.) 
         
         Dijkstra(Grid & grid);
-        Index get(Index idx);
+        std::vector<Index> get(Index idx);
+        std::vector<Position> get(Position pos_goal);
 
     private:
         std::vector<Node> nodes; // keeps a record of the cheapest cost of every cell in the grid, as well as their parents

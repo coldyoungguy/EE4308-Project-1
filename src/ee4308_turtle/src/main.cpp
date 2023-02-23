@@ -115,7 +115,7 @@ int main(int argc, char **argv)
     if (!nh.param("main_iter_rate", main_iter_rate, 25.0))
         ROS_WARN(" TMAIN : Param main_iter_rate not found, set to 25");
     std::string inflation_exit_algo;
-    if (!nh.getParam("inflation_exit_algo", inflation_exit_algo) && (inflation_exit_algo != "Dijkstra") && (inflation_exit_algo != "BFS")) {
+    if (!nh.getParam("inflation_exit_algo", inflation_exit_algo) && ((inflation_exit_algo != "Dijkstra") || (inflation_exit_algo != "BFS"))) {
         ROS_WARN(" TMAIN : Param inflation_exit_algo not found, set to BFS");
         inflation_exit_algo = "BFS";
     }
@@ -168,12 +168,13 @@ int main(int argc, char **argv)
     ros::Rate rate(main_iter_rate);
 
     // Other variables
-    bool replan = true;
+    bool replan = true, enable_inflated_replan = false;
     std::vector<Position> path, post_process_path, trajectory;
     int g = 0;                    // goal num
     Position pos_goal = goals[g]; // to trigger the reach goal
     int t = 0;                    // target num
     Position pos_target;
+    int count = 0;
 
     // wait for other nodes to load
     ROS_INFO(" TMAIN : Waiting for topics");
@@ -201,6 +202,7 @@ int main(int argc, char **argv)
         if (dist_euc(pos_rbt, pos_goal) < close_enough)
         { // reached the goal, get new goal
             replan = true;
+            // enable_inflated_replan = false;
             if (++g >= goals.size())
             {
                 if (verbose)
@@ -209,10 +211,25 @@ int main(int argc, char **argv)
             }
             // there are goals remaining
             pos_goal = goals[g];
-        }
+        } 
+        // else if (enable_inflated_replan) {
+        //     replan = false;
+        // } 
         else if (!is_safe_trajectory(trajectory, grid))
         { // request a new path if path intersects inaccessible areas, or if there is no path
-            replan = true;
+            if (enable_inflated_replan || !grid.get_cell(pos_rbt)){
+                if (count == 0) {
+                    replan = true;
+                } else if (count == 1) {
+                    replan = false;
+                    enable_inflated_replan = false;
+                }
+                count++;
+            } else {
+                enable_inflated_replan = false;
+                replan = true;
+                count = 0;
+            }
         }
 
         // always try to publish the next target so it does not get stuck waiting for a new path.
@@ -234,13 +251,16 @@ int main(int argc, char **argv)
 
         if (replan)
         {
-            if (grid.get_cell(pos_rbt) && grid.get_cell(pos_goal))
+            if ((grid.get_cell(pos_rbt) && grid.get_cell(pos_goal)) || enable_inflated_replan)
             {
                 if (verbose)
                     ROS_INFO(" TMAIN : Request Path from [%.2f, %.2f] to Goal %d at [%.2f,%.2f]",
                              pos_rbt.x, pos_rbt.y, g, pos_goal.x, pos_goal.y);
+                
+                if (!enable_inflated_replan) {
                 // if the robot and goal are both on accessible cells of the grid
-                path = planner.get(pos_rbt, pos_goal); // original path
+                    path = planner.get(pos_rbt, pos_goal); // original path
+                }
                 if (path.empty())
                 { // path cannot be found
                     if (verbose)
@@ -314,45 +334,42 @@ int main(int argc, char **argv)
             }
             else
             { // robot lies on inaccessible cell, or if goal lies on inaccessible cell
-                if (!grid.get_cell(pos_rbt))
-                    if (verbose_bfs) {
-                        ROS_ERROR(" TMAIN : Robot lies on inaccessible area. No path can be found");
-                        ROS_WARN("[%s Robot] Finding nearest free cell", inflation_exit_algo.c_str());
-                        ROS_WARN("[%s Robot] Current Goal: %f, %f", inflation_exit_algo.c_str(), pos_goal.x, pos_goal.y);
+                if (!grid.get_cell(pos_goal) || !grid.get_cell(pos_rbt) || !enable_inflated_replan){
+                    std::string inflated_replan_type;
+                    Position pos_start;
+                    std::vector<Position> path_replan;
+                    if (!grid.get_cell(pos_goal)) {
+                        inflated_replan_type = "Goal";
+                        pos_start = pos_goal;
                     }
-                        Index idx = grid.pos2idx(pos_rbt);
-                        if (inflation_exit_algo == "BFS") {
-                            idx = bfs.get(idx);
-                        } else if (inflation_exit_algo == "Dijkstra") {
-                            idx = dijkstra.get(idx);
-                        }
-                        Position pos_rbt_replan = grid.idx2pos(idx);
-                        // goals.insert(goals.begin(), pos_rbt_replan);
-                        goals.insert(goals.begin() + g + 1, grid.idx2pos(idx));
-    
-                    if (verbose_bfs) {
-                        ROS_WARN("[%s Robot] Updated Goal: %f, %f", inflation_exit_algo.c_str(), pos_rbt_replan.x, pos_rbt_replan.y);
-                        ROS_WARN("[%s Robot] Replanned to %f, %f", inflation_exit_algo.c_str(), pos_goal.x, pos_goal.y);
+                    if (!grid.get_cell(pos_rbt)) {
+                        inflated_replan_type = "Robot";
+                        pos_start = pos_rbt;
                     }
-                if (!grid.get_cell(pos_goal)){
                     if (verbose_bfs) {
-                        ROS_ERROR(" TMAIN : Goal lies on inaccessible area. No path can be found");
-                        ROS_WARN("[%s Goal] Finding nearest free cell", inflation_exit_algo.c_str());
-                        ROS_WARN("[%s Goal] Current Goal: %f, %f", inflation_exit_algo.c_str(), pos_goal.x, pos_goal.y);
+                        ROS_ERROR(" TMAIN : %s lies on inaccessible area. No path can be found", inflated_replan_type.c_str());
+                        ROS_WARN("[%s %s] Finding nearest free cell", inflation_exit_algo.c_str(), inflated_replan_type.c_str());
+                        ROS_WARN("[%s %s] Current Goal: %f, %f", inflation_exit_algo.c_str(), inflated_replan_type.c_str(), pos_goal.x, pos_goal.y);
                     }
-                        Index idx = grid.pos2idx(pos_goal);
-                        if (inflation_exit_algo == "BFS") {
-                            idx = bfs.get(idx);
-                        } else if (inflation_exit_algo == "Dijkstra") {
-                            idx = dijkstra.get(idx);
-                        }
-                        goals.insert(goals.begin() + g + 1, grid.idx2pos(idx));
-                        // goals[g] = grid.idx2pos(idx);
-                        Position pos_goal_replan = grid.idx2pos(idx);
-                    
+                    if (inflation_exit_algo == "BFS") {
+                        path_replan = bfs.get(pos_start);
+                    } else if (inflation_exit_algo == "Dijkstra") {
+                        path_replan = dijkstra.get(pos_start);
+                    }
+                    if (!grid.get_cell(pos_goal)) {
+                        pos_goal = path_replan.front();
+                    }
+                    if (!grid.get_cell(pos_rbt)) {
+                        path = path_replan;
+                        goals.insert(goals.begin() + g, path.front());
+                        pos_goal = path.front();
+                        enable_inflated_replan = true;
+                        count = 0;
+                    }                    
                     if (verbose_bfs) {
-                        ROS_WARN("[%s Goal] Updated Goal: %f, %f", inflation_exit_algo.c_str(), pos_goal_replan.x, pos_goal_replan.y);
-                        ROS_WARN("[%s Goal] Replanned to %f, %f", inflation_exit_algo.c_str(), goals[g+1].x, goals[g+1].y);                        
+                        ROS_WARN("[%s %s] Updated Goal: %f, %f", inflation_exit_algo.c_str(), inflated_replan_type.c_str(), pos_goal.x, pos_goal.y);
+                        // ROS_WARN("[%s Goal] Replanned to %f, %f", inflation_exit_algo.c_str(), goals[g+1].x, goals[g+1].y);
+                        ROS_WARN("[%s %s] Replanned to %f, %f", inflation_exit_algo.c_str(), inflated_replan_type.c_str(), pos_goal.x, pos_goal.y);                        
                     }
                 }
             }
