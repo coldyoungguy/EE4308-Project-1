@@ -115,9 +115,10 @@ int main(int argc, char **argv)
     if (!nh.param("main_iter_rate", main_iter_rate, 25.0))
         ROS_WARN(" TMAIN : Param main_iter_rate not found, set to 25");
     std::string inflation_exit_algo;
-    if (!nh.getParam("inflation_exit_algo", inflation_exit_algo) && (inflation_exit_algo != "Dijkstra") && (inflation_exit_algo != "BFS")) 
+    if (!nh.getParam("inflation_exit_algo", inflation_exit_algo) && (inflation_exit_algo != "Dijkstra") && (inflation_exit_algo != "BFS")) {
         ROS_WARN(" TMAIN : Param inflation_exit_algo not found, set to BFS");
-        inflation_exit_algo = "BFS";
+        inflation_exit_algo = "Dijkstra";
+    }
     // print out the parameters
     ROS_INFO(" TMAIN : Goals[%s], Grid[%.2f,%.2f to %.2f,%.2f]  CloseEnuf:%f  TgtDt:%f  AvgSpd:%f  CellSize:%f  InfMskRad:%f  LOThrsh:%d  LOCap:%d",
              goal_str.c_str(), pos_min.x, pos_min.y, pos_max.x, pos_max.y, close_enough, target_dt, average_speed, cell_size, inflation_radius, log_odds_thresh, log_odds_cap);

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <cmath>
 #include <errno.h>
+#include "grid.hpp"
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PointStamped.h>
 #include <geometry_msgs/Twist.h>
@@ -157,8 +158,9 @@ int main(int argc, char **argv)
 
             ////////////////// MOTION CONTROLLER HERE //////////////////
 
-            error_ang = limit_angle(heading(pos_rbt, target) - ang_rbt);
-            if ((!sign(error_ang) && abs(error_ang) < M_PI_2)) {
+            error_ang = limit_angle(heading(pos_rbt, target) - ang_rbt);        
+            
+            if ((!sign(error_ang) && abs(error_ang) > M_PI_2)) {
                 error_pos = -1 * dist_euc(pos_rbt, target);
                 error_ang += M_PI;
             } else if (sign(error_ang) && abs(error_ang) > M_PI_2) {
