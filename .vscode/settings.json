@@ -74,5 +74,6 @@
         "valarray": "cpp",
         "variant": "cpp",
         "bit": "cpp"
-    }
+    },
+    "cmake.sourceDirectory": "${workspaceFolder}/src/ee4308_bringup"
 }
