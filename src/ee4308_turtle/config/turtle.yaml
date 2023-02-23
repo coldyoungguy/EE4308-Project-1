@@ -9,6 +9,7 @@ inflation_radius: 0.22
 log_odds_thresh: 10 # this should be smaller than log_odds_cap
 log_odds_cap: 20
 main_iter_rate: 25 
+inflation_exit_algo: "BFS" # "BFS" or "Dijkstra"
 
 # motion
 verbose_motion: false

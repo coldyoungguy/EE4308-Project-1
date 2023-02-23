@@ -37,7 +37,8 @@ add_executable(
     src/common.cpp
     src/los.cpp
     src/trajectory.cpp
-    src/bfs.cpp)
+    src/bfs.cpp
+    src/dijkstra.cpp)
 target_link_libraries(turtle_main ${catkin_LIBRARIES})
 
 

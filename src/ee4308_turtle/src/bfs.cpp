@@ -67,7 +67,7 @@ Index BFS::get(Index idx)
         }
         node->visited = true;
 
-        // (3) return path if node is the goal
+        // (3) return idx if node is the nearest free cell
         if (grid.get_cell(node->idx))
         {   // reached the goal, return the path
             ROS_INFO("[BFS] Found free cell");

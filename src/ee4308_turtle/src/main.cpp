@@ -2,6 +2,7 @@
 #include "grid.hpp"
 #include "planner.hpp"
 #include "bfs.hpp"
+#include "dijkstra.hpp"
 #include "trajectory.hpp"
 #include <stdio.h>
 #include <stdlib.h>
@@ -113,6 +114,10 @@ int main(int argc, char **argv)
     double main_iter_rate;
     if (!nh.param("main_iter_rate", main_iter_rate, 25.0))
         ROS_WARN(" TMAIN : Param main_iter_rate not found, set to 25");
+    std::string inflation_exit_algo;
+    if (!nh.getParam("inflation_exit_algo", inflation_exit_algo))
+        ROS_WARN(" TMAIN : Param inflation_exit_algo not found, set to BFS");
+        inflation_exit_algo = "bfs";
     // print out the parameters
     ROS_INFO(" TMAIN : Goals[%s], Grid[%.2f,%.2f to %.2f,%.2f]  CloseEnuf:%f  TgtDt:%f  AvgSpd:%f  CellSize:%f  InfMskRad:%f  LOThrsh:%d  LOCap:%d",
              goal_str.c_str(), pos_min.x, pos_min.y, pos_max.x, pos_max.y, close_enough, target_dt, average_speed, cell_size, inflation_radius, log_odds_thresh, log_odds_cap);
@@ -156,6 +161,7 @@ int main(int argc, char **argv)
     // Setup the planner class
     Planner planner(grid);
     BFS bfs(grid);
+    Dijkstra dijkstra(grid);
 
     // setup loop rates
     ros::Rate rate(main_iter_rate);
@@ -310,32 +316,40 @@ int main(int argc, char **argv)
                 if (!grid.get_cell(pos_rbt))
                     if (verbose_bfs) {
                         ROS_ERROR(" TMAIN : Robot lies on inaccessible area. No path can be found");
-                        ROS_WARN("[BFS Robot] Finding nearest free cell");
-                        ROS_WARN("[BFS Robot] Current Goal: %f, %f", pos_goal.x, pos_goal.y);
+                        ROS_WARN("[%s Robot] Finding nearest free cell", inflation_exit_algo.c_str());
+                        ROS_WARN("[%s Robot] Current Goal: %f, %f", inflation_exit_algo.c_str(), pos_goal.x, pos_goal.y);
                     }
                         Index idx = grid.pos2idx(pos_rbt);
-                        idx = bfs.get(idx);
+                        if (inflation_exit_algo == "BFS") {
+                            idx = bfs.get(idx);
+                        } else if (inflation_exit_algo == "Dijkstra") {
+                            idx = dijkstra.get(idx);
+                        }
                         Position pos_rbt_replan = grid.idx2pos(idx);
                         goals.insert(goals.begin(), pos_rbt_replan);
     
                     if (verbose_bfs) {
-                        ROS_WARN("[BFS Robot] Updated Goal: %f, %f", pos_rbt_replan.x, pos_rbt_replan.y);
-                        ROS_WARN("[BFS Robot] Replanned to %f, %f", pos_goal.x, pos_goal.y);
+                        ROS_WARN("[%s Robot] Updated Goal: %f, %f", inflation_exit_algo.c_str(), pos_rbt_replan.x, pos_rbt_replan.y);
+                        ROS_WARN("[%s Robot] Replanned to %f, %f", inflation_exit_algo.c_str(), pos_goal.x, pos_goal.y);
                     }
                 if (!grid.get_cell(pos_goal)){
                     if (verbose_bfs) {
                         ROS_ERROR(" TMAIN : Goal lies on inaccessible area. No path can be found");
-                        ROS_WARN("[BFS Goal] Finding nearest free cell");
-                        ROS_WARN("[BFS Goal] Current Goal: %f, %f", pos_goal.x, pos_goal.y);
+                        ROS_WARN("[%s Goal] Finding nearest free cell", inflation_exit_algo.c_str());
+                        ROS_WARN("[%s Goal] Current Goal: %f, %f", inflation_exit_algo.c_str(), pos_goal.x, pos_goal.y);
                     }
                         Index idx = grid.pos2idx(pos_goal);
-                        idx = bfs.get(idx);
+                        if (inflation_exit_algo == "BFS") {
+                            idx = bfs.get(idx);
+                        } else if (inflation_exit_algo == "Dijkstra") {
+                            idx = dijkstra.get(idx);
+                        }
                         goals[g] = grid.idx2pos(idx);
                         Position pos_goal_replan = grid.idx2pos(idx);
                     
                     if (verbose_bfs) {
-                        ROS_WARN("[BFS Goal] Updated Goal: %f, %f", pos_goal_replan.x, pos_goal_replan.y);
-                        ROS_WARN("[BFS Goal] Replanned to %f, %f", pos_goal.x, pos_goal.y);                        
+                        ROS_WARN("[%s Goal] Updated Goal: %f, %f", inflation_exit_algo.c_str(), pos_goal_replan.x, pos_goal_replan.y);
+                        ROS_WARN("[%s Goal] Replanned to %f, %f", inflation_exit_algo.c_str(), pos_goal.x, pos_goal.y);                        
                     }
                 }
             }
