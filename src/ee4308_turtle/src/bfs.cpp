@@ -1,6 +1,6 @@
 #include "bfs.hpp"
 BFS::Node::Node() 
-    : idx(-1, -1), parent(-1, -1) 
+    : visited(false), idx(-1, -1), parent(-1, -1) 
     {}
 BFS::Open::Open() 
     : idx(-1, -1) 
