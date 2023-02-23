@@ -117,7 +117,7 @@ int main(int argc, char **argv)
     std::string inflation_exit_algo;
     if (!nh.getParam("inflation_exit_algo", inflation_exit_algo) && (inflation_exit_algo != "Dijkstra") && (inflation_exit_algo != "BFS")) {
         ROS_WARN(" TMAIN : Param inflation_exit_algo not found, set to BFS");
-        inflation_exit_algo = "Dijkstra";
+        inflation_exit_algo = "BFS";
     }
     // print out the parameters
     ROS_INFO(" TMAIN : Goals[%s], Grid[%.2f,%.2f to %.2f,%.2f]  CloseEnuf:%f  TgtDt:%f  AvgSpd:%f  CellSize:%f  InfMskRad:%f  LOThrsh:%d  LOCap:%d",
