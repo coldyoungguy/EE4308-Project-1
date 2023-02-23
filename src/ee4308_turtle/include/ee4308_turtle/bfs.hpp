@@ -13,6 +13,7 @@ class BFS
     public:
         struct Node
         {
+            bool visited;
             Index idx, parent;
             Node();
         };

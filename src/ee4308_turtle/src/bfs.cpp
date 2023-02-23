@@ -44,9 +44,13 @@ Index BFS::get(Index idx)
 {
     std::vector<Index> path_idx; // clear previous path
 
-    // set start node g cost as zero
     int k = grid.get_key(idx);
     Node * node = &(nodes[k]);
+
+    // Initialise nodes
+    for (Node & node : nodes) {
+        node.visited = false;
+    }
 
     // add start node to openlist
     add_to_open(node);
@@ -56,6 +60,12 @@ Index BFS::get(Index idx)
     {
         // (1) poll node from open
         node = poll_from_open();
+
+        // check if node has already been visited
+        if (node->visited){
+            continue;
+        }
+        node->visited = true;
 
         // (3) return path if node is the goal
         if (grid.get_cell(node->idx))
