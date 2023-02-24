@@ -105,11 +105,9 @@ std::vector<Index> Dijkstra::get(Index idx_start, std::string inflated_replan_ty
         // (3) return idx if node is the nearest free cell
         if (inflated_replan_type == "Robot")
         {
-            ROS_WARN("Here 1");
             if (grid.get_cell(node->idx) && dist_euc(node->idx, node_free_idx) > 0.2)
             {   // reached the goal, return the path
                 ROS_INFO("[Dijkstra] Found free cell with padding");
-                
                 path_idx.push_back(node->idx);
 
                 while (node->idx.i != idx_start.i || node->idx.j != idx_start.j)
@@ -121,7 +119,6 @@ std::vector<Index> Dijkstra::get(Index idx_start, std::string inflated_replan_ty
                 break;
             }
         } else {
-            ROS_INFO("Here 2");
             if (grid.get_cell(node->idx))
             {   // reached the goal, return the path
                 ROS_INFO("[Dijkstra] Found free cell");
