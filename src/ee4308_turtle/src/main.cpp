@@ -202,7 +202,6 @@ int main(int argc, char **argv)
         if (dist_euc(pos_rbt, pos_goal) < close_enough)
         { // reached the goal, get new goal
             replan = true;
-            // enable_inflated_replan = false;
             if (++g >= goals.size())
             {
                 if (verbose)
@@ -217,19 +216,7 @@ int main(int argc, char **argv)
         // } 
         else if (!is_safe_trajectory(trajectory, grid))
         { // request a new path if path intersects inaccessible areas, or if there is no path
-            if (enable_inflated_replan || !grid.get_cell(pos_rbt)){
-                if (count == 0) {
-                    replan = true;
-                } else if (count == 1) {
-                    replan = false;
-                    enable_inflated_replan = false;
-                }
-                count++;
-            } else {
-                enable_inflated_replan = false;
-                replan = true;
-                count = 0;
-            }
+            replan = true;
         }
 
         // always try to publish the next target so it does not get stuck waiting for a new path.
@@ -354,17 +341,22 @@ int main(int argc, char **argv)
                     if (inflation_exit_algo == "BFS") {
                         path_replan = bfs.get(pos_start);
                     } else if (inflation_exit_algo == "Dijkstra") {
-                        path_replan = dijkstra.get(pos_start);
+                        ROS_WARN("Here 3");
+                        path_replan = dijkstra.get(pos_start, "Goal");
                     }
                     if (!grid.get_cell(pos_goal)) {
                         pos_goal = path_replan.front();
                     }
                     if (!grid.get_cell(pos_rbt)) {
-                        path = path_replan;
-                        goals.insert(goals.begin() + g, path.front());
-                        pos_goal = path.front();
-                        enable_inflated_replan = true;
-                        count = 0;
+                        pos_target = path_replan.front();
+                        pos_target = dijkstra.get(pos_target, "Robot").front();
+
+                        while (dist_euc(pos_rbt, pos_target) > 0.15) {
+                            msg_target.point.x = pos_target.x;
+                            msg_target.point.y = pos_target.y;
+                            pub_target.publish(msg_target);
+                            ROS_ERROR("%f %f %f %f", pos_target.x, pos_target.y, pos_rbt.x, pos_rbt.y);
+                        }
                     }                    
                     if (verbose_bfs) {
                         ROS_WARN("[%s %s] Updated Goal: %f, %f", inflation_exit_algo.c_str(), inflated_replan_type.c_str(), pos_goal.x, pos_goal.y);

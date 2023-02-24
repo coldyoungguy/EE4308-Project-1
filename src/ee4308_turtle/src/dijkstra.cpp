@@ -1,4 +1,6 @@
 #include "dijkstra.hpp"
+#include <stdio.h>
+
 Dijkstra::Node::Node() 
     : g(0), visited(false), idx(-1, -1), parent(-1, -1) 
     {}
@@ -54,9 +56,9 @@ Dijkstra::Node * Dijkstra::poll_from_open()
     return node;
 }
 
-std::vector<Position> Dijkstra::get(Position pos_start)
+std::vector<Position> Dijkstra::get(Position pos_start, std::string inflated_replan_type)
 {
-    std::vector<Index> path_idx = get(grid.pos2idx(pos_start));
+    std::vector<Index> path_idx = get(grid.pos2idx(pos_start), inflated_replan_type);
     std::vector<Position> path;
     for (Index & idx : path_idx)
     {
@@ -65,7 +67,7 @@ std::vector<Position> Dijkstra::get(Position pos_start)
     return path;
 }
 
-std::vector<Index> Dijkstra::get(Index idx_start)
+std::vector<Index> Dijkstra::get(Index idx_start, std::string inflated_replan_type)
 {
     std::vector<Index> path_idx; // clear previous path
 
@@ -80,6 +82,9 @@ std::vector<Index> Dijkstra::get(Index idx_start)
     int k = grid.get_key(idx_start);
     Node * node = &(nodes[k]);
     node->g = 0;
+    Index node_free_idx;
+    node_free_idx.i = -1;
+    node_free_idx.j = -1;
 
     // add start node to openlist
     add_to_open(node);
@@ -98,19 +103,39 @@ std::vector<Index> Dijkstra::get(Index idx_start)
         node->visited = true; // mark as visited, so the cheapest route to this node is found
 
         // (3) return idx if node is the nearest free cell
-        if (grid.get_cell(node->idx))
-        {   // reached the goal, return the path
-            ROS_INFO("[Dijkstra] Found free cell");
-            
-            path_idx.push_back(node->idx);
-
-            while (node->idx.i != idx_start.i || node->idx.j != idx_start.j)
-            {   // while node is not start, keep finding the parent nodes and add to open list
-                k = grid.get_key(node->parent);
-                node = &(nodes[k]); // node is now the parent
+        if (inflated_replan_type == "Robot")
+        {
+            ROS_WARN("Here 1");
+            if (grid.get_cell(node->idx) && dist_euc(node->idx, node_free_idx) > 0.2)
+            {   // reached the goal, return the path
+                ROS_INFO("[Dijkstra] Found free cell with padding");
+                
                 path_idx.push_back(node->idx);
+
+                while (node->idx.i != idx_start.i || node->idx.j != idx_start.j)
+                {   // while node is not start, keep finding the parent nodes and add to open list
+                    k = grid.get_key(node->parent);
+                    node = &(nodes[k]); // node is now the parent
+                    path_idx.push_back(node->idx);
+                }
+                break;
             }
-            break;
+        } else {
+            ROS_INFO("Here 2");
+            if (grid.get_cell(node->idx))
+            {   // reached the goal, return the path
+                ROS_INFO("[Dijkstra] Found free cell");
+                
+                path_idx.push_back(node->idx);
+
+                while (node->idx.i != idx_start.i || node->idx.j != idx_start.j)
+                {   // while node is not start, keep finding the parent nodes and add to open list
+                    k = grid.get_key(node->parent);
+                    node = &(nodes[k]); // node is now the parent
+                    path_idx.push_back(node->idx);
+                }
+                break;
+            }
         }
 
         // (4) check neighbors and add them if cheaper
