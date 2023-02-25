@@ -26,12 +26,12 @@ enable_move: true
 verbose_move: false
 data_record: false
 PATH_record: 'PATH' # default "PATH" to not record in random place without intialising
-Kp_lin: 1.5
+Kp_lin: 2.5
 Ki_lin: 0.0
-Kd_lin: 0.5
+Kd_lin: 1.0
 max_lin_vel: 0.22
 max_lin_acc: 0.5
-Kp_ang: 1.0
+Kp_ang: 0.7
 Ki_ang: 0.0
 Kd_ang: 0.0
 max_ang_vel: 2.84
