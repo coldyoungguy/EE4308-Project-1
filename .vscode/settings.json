@@ -75,5 +75,9 @@
         "variant": "cpp",
         "bit": "cpp"
     },
-    "cmake.sourceDirectory": "${workspaceFolder}/src/ee4308_bringup"
+    "cmake.sourceDirectory": "${workspaceFolder}/src/ee4308_bringup",
+    "python.analysis.extraPaths": [
+        "/home/yangkai/hector/devel/lib/python3/dist-packages",
+        "/opt/ros/noetic/lib/python3/dist-packages"
+    ]
 }

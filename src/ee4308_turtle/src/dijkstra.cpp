@@ -165,7 +165,8 @@ std::vector<Index> Dijkstra::get(Index idx_start, std::string inflated_replan_ty
 
             // get cost of obstacle and inflation zones
             if (grid.grid_log_odds[nb_k] > grid.log_odds_thresh) {
-                g_nb += 999; // add heavy cost for obstacle
+                // g_nb += 999; // add heavy cost for obstacle
+                continue;
             } else if (grid.grid_inflation[nb_k] > 0) {
                 g_nb += 10; // add light cost for infation zones
             }
